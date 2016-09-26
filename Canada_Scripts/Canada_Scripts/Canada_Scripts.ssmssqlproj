@@ -1,0 +1,130 @@
+<?xml version="1.0"?>
+<SqlWorkbenchSqlProject xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" Name="Canada_Scripts">
+  <Items>
+    <LogicalFolder Name="Connections" Type="2" Sorted="true">
+      <Items>
+        <ConnectionNode Name="VMDatabase:CSIS\GSanders">
+          <Created>2016-09-22T11:09:29.4995655-04:00</Created>
+          <Type>SQL</Type>
+          <Server>VMDatabase</Server>
+          <UserName />
+          <Authentication>Windows Authentication</Authentication>
+          <InitialDB />
+          <LoginTimeout>15</LoginTimeout>
+          <ExecutionTimeout>0</ExecutionTimeout>
+          <ConnectionProtocol>NotSpecified</ConnectionProtocol>
+          <ApplicationName>Microsoft SQL Server Management Studio - Query</ApplicationName>
+        </ConnectionNode>
+      </Items>
+    </LogicalFolder>
+    <LogicalFolder Name="Queries" Type="0" Sorted="true">
+      <Items>
+        <FileNode Name="Contract_ContractCanadaRelatedFPDSandFSRS.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:VMDatabase:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>VMDatabase</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>Contract_ContractCanadaRelatedFPDSandFSRS.sql</FullPath>
+        </FileNode>
+        <FileNode Name="Contract_ContractMergerFPDSandFSRS.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:VMDatabase:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>VMDatabase</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>Contract_ContractMergerFPDSandFSRS.sql</FullPath>
+        </FileNode>
+        <FileNode Name="Contract_FPDScontractsInFSRS.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:VMDatabase:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>VMDatabase</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>Contract_FPDScontractsInFSRS.sql</FullPath>
+        </FileNode>
+        <FileNode Name="Contract_FSRSprime.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:VMDatabase:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>VMDatabase</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>Contract_FSRSprime.sql</FullPath>
+        </FileNode>
+        <FileNode Name="Contract_SP_FSRSinContext.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:VMDatabase:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>VMDatabase</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>Contract_SP_FSRSinContext.sql</FullPath>
+        </FileNode>
+        <FileNode Name="Location_CanadaRelatedFPDS.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:VMDatabase:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>VMDatabase</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>Location_CanadaRelatedFPDS.sql</FullPath>
+        </FileNode>
+        <FileNode Name="Location_CanadaRelatedFSRS.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:VMDatabase:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>VMDatabase</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>Location_CanadaRelatedFSRS.sql</FullPath>
+        </FileNode>
+        <FileNode Name="Location_CCCcontractExtraction.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:VMDatabase:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>VMDatabase</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>Location_CCCcontractExtraction.sql</FullPath>
+        </FileNode>
+        <FileNode Name="Location_CCCcontractMatching.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:VMDatabase:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>VMDatabase</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>Location_CCCcontractMatching.sql</FullPath>
+        </FileNode>
+        <FileNode Name="Location_CCCcontractNumber.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:VMDatabase:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>VMDatabase</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>Location_CCCcontractNumber.sql</FullPath>
+        </FileNode>
+        <FileNode Name="Location_CCCidvpiid.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:VMDatabase:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>VMDatabase</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>Location_CCCidvpiid.sql</FullPath>
+        </FileNode>
+        <FileNode Name="Location_CCCidvpiidPIID.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:VMDatabase:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>VMDatabase</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>Location_CCCidvpiidPIID.sql</FullPath>
+        </FileNode>
+        <FileNode Name="Location_CCCmatchingCSIScontractIDtoSupplier.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:VMDatabase:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>VMDatabase</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>Location_CCCmatchingCSIScontractIDtoSupplier.sql</FullPath>
+        </FileNode>
+        <FileNode Name="Location_CCCmatchingCSISidvpiidIDtoSupplier.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:VMDatabase:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>VMDatabase</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>Location_CCCmatchingCSISidvpiidIDtoSupplier.sql</FullPath>
+        </FileNode>
+        <FileNode Name="Location_CCCwo_refExtraction.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:VMDatabase:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>VMDatabase</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>Location_CCCwo_refExtraction.sql</FullPath>
+        </FileNode>
+        <FileNode Name="Location_sp_CanadaRelated.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:VMDatabase:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>VMDatabase</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>Location_sp_CanadaRelated.sql</FullPath>
+        </FileNode>
+        <FileNode Name="Location_sp_CCCmatchUpcontracts.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:VMDatabase:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>VMDatabase</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>Location_sp_CCCmatchUpcontracts.sql</FullPath>
+        </FileNode>
+      </Items>
+    </LogicalFolder>
+    <LogicalFolder Name="Miscellaneous" Type="3" Sorted="true">
+      <Items />
+    </LogicalFolder>
+  </Items>
+</SqlWorkbenchSqlProject>
