@@ -370,40 +370,12 @@ CanadaVendor<-CanadaVendor[order(CanadaVendor$Obligation.2014,decreasing=TRUE),]
 ```
 
 
-```{r PrimeSub}
+```{r CanadaContractReadIn}
 CanadaFPDS<-read.csv(unz(file.path("Data","Location_CanadaRelatedFPDScomplete.zip"),
                          "Location_CanadaRelatedFPDScomplete.csv"),
                      na.strings=c("NULL","NA"),
                      header=TRUE)
-CanadaFPDS$SubCustomer[is.na(CanadaFPDS$SubCustomer) & CanadaFPDS$Customer=="Other Agencies"]<-
-  "All other Customers"
 CanadaFPDS<-apply_lookups(Path,CanadaFPDS)
-
-sum(CanadaFPDS$Obligation.2014)
-PrimeContract2011<-ddply(subset(CanadaFPDS,Fiscal.Year>=as.Date("2011-01-01")),
-      .(CSIScontractID,IsSubcontractReportingContract),
-      summarise,
-      Obligation.2014=sum(Obligation.2014))
-sum(PrimeContract2011$Obligation.2014)
-PrimeContractCount<-ddply(PrimeContract2011,
-      .(IsSubcontractReportingContract),
-      summarise,
-      Obligation.2014=sum(Obligation.2014),
-      ContractCount=length(CSIScontractID))
-
-PrimeContractCount$PercentDollar<-PrimeContractCount$Obligation.2014/sum(PrimeContractCount$Obligation.2014)
-PrimeContractCount$PercentContract<-PrimeContractCount$ContractCount/sum(PrimeContractCount$ContractCount)
-
-# 11.6% 
-#  1.6%
-write.csv(PrimeContractCount,"PrimeContract.csv")
-
-
-
-```
-
-
-```{r SubContract}
 
 CanadaFSRS<-read.csv(file.path("Data","Location_CanadaRelatedFSRScomplete.csv"),
                      na.strings=c("NULL","NA"),
@@ -414,10 +386,33 @@ CanadaFSRS$ObligatedAmount<-CanadaFSRS$SubawardAmount
 CanadaFSRS<-apply_lookups(Path,CanadaFSRS)
 
 CanadaFSRS$MaxofCanadaRelevant<-CanadaFSRS$MaxOfIsPlaceCanada==1 |
-CanadaFSRS$MaxOfIsOriginCanada==1 |
-CanadaFSRS$MaxOfIsVendorCanadian==1
+  CanadaFSRS$MaxOfIsOriginCanada==1 |
+  CanadaFSRS$MaxOfIsVendorCanadian==1
 
 CanadaFSRS$MaxofCanadaRelevant[is.na(CanadaFSRS$MaxofCanadaRelevant)]<-FALSE
+
+CanadaFSRS$MaxofCanadaRelevant<-factor(CanadaFSRS$MaxofCanadaRelevant,levels=c(TRUE,FALSE),
+                                              labels=c("Canada Relevant Contract","Only Subcontract Level"))
+
+
+```
+
+```{r ComparingPercentages}
+PrimeContract2011<-ddply(subset(CanadaFPDS,Fiscal.Year>=as.Date("2011-01-01")),
+      .(CSIScontractID,IsSubcontractReportingContract),
+      summarise,
+      Obligation.2014=sum(Obligation.2014))
+
+PrimeContractCount<-ddply(PrimeContract2011,
+      .(IsSubcontractReportingContract),
+      summarise,
+      Obligation.2014=sum(Obligation.2014),
+      ContractCount=length(CSIScontractID))
+
+PrimeContractCount$PercentDollar<-PrimeContractCount$Obligation.2014/sum(PrimeContractCount$Obligation.2014)
+PrimeContractCount$PercentCount<-PrimeContractCount$ContractCount/sum(PrimeContractCount$ContractCount)
+PrimeContractCount$MaxofCanadaRelevant<-TRUE
+PrimeContractCount$Metric<-"Contracts"
 
 SubContract2011<-ddply(CanadaFSRS,
       .(CSIScontractID,MaxofCanadaRelevant),
@@ -425,26 +420,47 @@ SubContract2011<-ddply(CanadaFSRS,
       Obligation.2014=sum(Obligation.2014))
 
 
-
-SubContractCount<-ddply(subset(CanadaFSRS,Fiscal.Year<=as.Date('2016-01-01')),
+SubContractCount<-ddply(subset(SubContract2011,Fiscal.Year<=as.Date('2016-01-01')),
       .(MaxofCanadaRelevant),
       summarise,
       Obligation.2014=sum(Obligation.2014),
       ContractCount=length(CSIScontractID))
 
 SubContractCount$PercentDollar<-SubContractCount$Obligation.2014/sum(SubContractCount$Obligation.2014)
-SubContractCount$PercentContract<-SubContractCount$ContractCount/sum(SubContractCount$ContractCount)
+SubContractCount$PercentCount<-SubContractCount$ContractCount/sum(SubContractCount$ContractCount)
+SubContractCount$IsSubcontractReportingContract<-1
+SubContractCount$Metric<-"Subcontracts"
+
+ContractCount<-rbind(PrimeContractCount,SubContractCount)
+
+
+write.csv(PrimeContractCount,"ContractCount")
 
 
 
+```
+
+
+```{r SubContract}
 
 SubContractAnnual<-ddply(subset(CanadaFSRS,Fiscal.Year<as.Date("2016-01-01")),
-      .(MaxofCanadaRelevant,SubawardReportYear),
+      .(Fiscal.Year,MaxofCanadaRelevant),
       summarise,
       Obligation.2014=sum(Obligation.2014))
 
-SubContractAnnual$MaxofCanadaRelevant<-factor(SubContractAnnual$MaxofCanadaRelevant,levels=c(TRUE,FALSE),
-                                              labels=c("Canada Relevant Contract","Only Subcontract Level"))
+PrimeAnnual<-ddply(subset(CanadaFPDS,Fiscal.Year>=as.Date("2011-01-01")),
+      .(Fiscal.Year,IsSubcontractReportingContract),
+      summarise,
+      Obligation.2014=sum(Obligation.2014))
+
+PrimeAnnual<-ddply(PrimeAnnual,
+      .(Fiscal.Year),
+      transform,
+      PercentObligations=Obligation.2014/sum(Obligation.2014))
+
+PrimeAnnual<-subset(PrimeAnnual,IsSubcontractReportingContract==1,select=-c(Obligation.2014))
+EstimateAnnual<-subset(SubContractAnnual,MaxofCanadaRelevant=="Only Subcontract Level")
+EstimateAnnual<-plyr::join(PrimeAnnual,EstimateAnnual)
 
 ggplot(SubContractAnnual,
        aes(x=SubawardReportYear,
@@ -460,18 +476,4 @@ ggplot(SubContractAnnual,
 
 
 
-PrimeAnnual<-ddply(subset(CanadaFPDS,Fiscal.Year>=as.Date("2011-01-01")),
-      .(Fiscal.Year,IsSubcontractReportingContract),
-      summarise,
-      Obligation.2014=sum(Obligation.2014))
-
-PrimeAnnual<-ddply(subset(PrimeAnnual,Fiscal.Year>=as.Date("2011-01-01")),
-      .(Fiscal.Year),
-      transform,
-      PercentObligations=Obligation.2014/sum(Obligation.2014))
-PrimeAnnual<-subset(PrimeAnnual,IsSubcontractReportingContract==1)
-
-
-
-EstimateAnnual<-subset(SubContractAnnual,MaxofCanadaRelevant=="Only Subcontract Level")
 ```
