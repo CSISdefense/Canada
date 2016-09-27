@@ -1,3 +1,3 @@
-"","IsSubcontractReportingContract","Obligation.2014","ContractCount","PercentDollar","PercentCount","MaxofCanadaRelevant","Metric"
-"1",0,5.5740843549647,34577,0.886425702992577,0.984034378735272,TRUE,"Contracts"
-"2",1,0.714185870217816,561,0.113574297007423,0.0159656212647276,TRUE,"Contracts"
+"","IsSubcontractReportingContract","Obligation.2014","ContractCount","PercentDollar","PercentCount","MaxofCanadaRelevant","Metric","Source"
+"1","No Reporting",5.5740843549647,34577,0.886425702992577,0.984034378735272,"Canada Relevant Contract","Contracts","FPDS"
+"2","Subcontracts Reported",0.714185870217816,561,0.113574297007423,0.0159656212647276,"Canada Relevant Contract","Contracts","FPDS"
