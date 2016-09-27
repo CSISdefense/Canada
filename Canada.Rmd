@@ -536,7 +536,7 @@ ggplot(SubContractAnnual,
               legend.text= element_text(size=8))+
   scale_y_continuous("Percent of Obligations to Canada Related Vendors",labels = scales::percent)+
   scale_x_date("Subaward Report Year")+
-  scale_fill_discrete("Prime Contract Canada Relevant")
+  scale_color_discrete("Prime Contract Canada Relevant")
 
 
 ```
