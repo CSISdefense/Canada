@@ -172,7 +172,39 @@ max(fsrs.[PrimeAwardDateSubmitted]) as [PrimeAwardDateSubmitted]
 
 
 
+--Toplines
+SELECT [SubawardReportYear]
+      ,[Customer]
+      ,[SubCustomer]
+	  	      ,[CanadaSector]
 
+      ,sum(f.[SubawardAmount]) as [SubawardAmount]
+	  	  ,count(Distinct f.CSIScontractID) as NumberOfContracts
+  FROM [DIIG].[Location].[CanadaRelatedFSRSpartial] f
+  left outer join Contract.ContractCanadaRelatedFPDSandFSRS c
+  on f.CSIScontractID=c.CSIScontractID
+  group by [SubawardReportYear]
+      ,[Customer]
+      ,[SubCustomer]
+	  	      ,[CanadaSector]
+
+
+SELECT  f.[fiscal_year]
+      ,f.[Customer]
+      ,f.[SubCustomer]
+      ,f.[CanadaSector]
+	  , iif(c.CSIScontractID is not null,1,0) as IsSubcontractReportingContract
+      ,sum(f.[obligatedAmount]) as [obligatedAmount]
+      ,sum(f.[numberOfActions]) as numberOfActions
+	  ,count(Distinct f.CSIScontractID) as NumberOfContracts
+  FROM [DIIG].[Location].[CanadaRelatedFPDSpartial] f
+  left outer join Contract.ContractCanadaRelatedFPDSandFSRS c
+  on f.CSIScontractID=c.CSIScontractID
+  group by f.[fiscal_year]
+      ,f.[Customer]
+      ,f.[SubCustomer]
+      ,f.[CanadaSector]
+	  , iif(c.CSIScontractID is not null,1,0)
 
 
 
