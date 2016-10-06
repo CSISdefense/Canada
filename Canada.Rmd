@@ -41,6 +41,9 @@ Coloration<-subset(Coloration, variable!="")
 
 ```{r CanadaContractReadIn}
 
+
+write.csv(unique(CanadaFPDS$CanadaSector),"Lookup_CanadaSector.csv")
+
 CanadaFPDS<-read.csv(unz(file.path("Data","Location_CanadaRelatedFPDScomplete.zip"),
                          "Location_CanadaRelatedFPDScomplete.csv"),
                      na.strings=c("NULL","NA"),
@@ -77,9 +80,10 @@ CanadaFSRS$MaxofCanadaRelevant<-factor(CanadaFSRS$MaxofCanadaRelevant,levels=c(T
 TotalFPDS<-read.csv(file.path("Data","Location_FPDStoplineCanadaSector.csv"),
                      na.strings=c("NULL","NA"),
                      header=TRUE)
-
+TotalFPDS<-TotalFPDS[TotalFPDS[,"ï..fiscal_year"]>=1990,]
 TotalFPDS<-apply_lookups(Path,TotalFPDS)
 TotalFPDS$TotalPrime.2014<-TotalFPDS$Obligation.2014
+
 
 TotalFSRS<-read.csv(file.path("Data","Location_FSRStoplineCanadaSector.csv"),
                      na.strings=c("NULL","NA"),
@@ -461,7 +465,7 @@ write.csv(PrimeContractCount,"ContractCount")
 ```
 
 
-```{r PercentageCamadaAnnual}
+```{r AnnualCanadaPercentage}
 
 SubContractAnnualOnlySub<-ddply(subset(CanadaFSRS,Fiscal.Year<as.Date("2016-01-01")),
       .(Fiscal.Year,MaxofCanadaRelevant),
@@ -479,17 +483,18 @@ SubContractAnnualAll<-ddply(subset(CanadaFSRS,Fiscal.Year<as.Date("2016-01-01"))
 TotalFSRSAnnual<-ddply(subset(TotalFSRS,Fiscal.Year<as.Date("2016-01-01")),
       .(Fiscal.Year),
       summarise,
-      TotalSub.2014=sum(TotalSub.2014))
+      Total.2014=sum(TotalSub.2014))
 
 SubContractAnnualOnlySub<-plyr::join(SubContractAnnualOnlySub,TotalFSRSAnnual)
-SubContractAnnualOnlySub$PercentCanada<-SubContractAnnualOnlySub$Obligation.2014/SubContractAnnualOnlySub$TotalSub.2014
+SubContractAnnualOnlySub$PercentCanada<-SubContractAnnualOnlySub$Obligation.2014/SubContractAnnualOnlySub$Total.2014
 
 SubContractAnnualAll<-plyr::join(SubContractAnnualAll,TotalFSRSAnnual)
-SubContractAnnualAll$PercentCanada<-SubContractAnnualAll$Obligation.2014/SubContractAnnualAll$TotalSub.2014
-SubContractAnnualAll$MaxofCanadaRelevant<-"All"
-SubContractAnnual<-rbind(SubContractAnnualOnlySub,SubContractAnnualAll)
+SubContractAnnualAll$PercentCanada<-SubContractAnnualAll$Obligation.2014/SubContractAnnualAll$Total.2014
+SubContractAnnualAll$MaxofCanadaRelevant<-"All Subcontracts"
+BlendedContractAnnual<-rbind(SubContractAnnualOnlySub,SubContractAnnualAll)
 
-PrimeAnnual<-ddply(subset(CanadaFPDS,Fiscal.Year>=as.Date("2011-01-01")),
+
+PrimeAnnual<-ddply(CanadaFPDS,
       .(Fiscal.Year),
       summarise,
       Obligation.2014=sum(Obligation.2014))
@@ -503,13 +508,16 @@ PrimeAnnual<-ddply(subset(CanadaFPDS,Fiscal.Year>=as.Date("2011-01-01")),
 # EstimateAnnual$Obligation.2014<-EstimateAnnual$Obligation.2014*EstimateAnnual$Ratio
 
  
-TotalFPDSannual<-ddply(subset(TotalFPDS,Fiscal.Year>=as.Date("2011-01-01")),
+TotalFPDSannual<-ddply(TotalFPDS,
       .(Fiscal.Year),
       summarise,
-      TotalPrime.2014=sum(TotalPrime.2014))
+      Total.2014=sum(TotalPrime.2014))
 
 PrimeAnnual<-plyr::join(PrimeAnnual,TotalFPDSannual)
-PrimeAnnual$PercentCanada<-PrimeAnnual$Obligation.2014/PrimeAnnual$TotalPrime.2014
+PrimeAnnual$PercentCanada<-PrimeAnnual$Obligation.2014/PrimeAnnual$Total.2014
+PrimeAnnual$MaxofCanadaRelevant<-"Prime Contracts"
+
+BlendedContractAnnual<-rbind(BlendedContractAnnual,PrimeAnnual)
 
 
 # ggplot(SubContractAnnual,
@@ -526,7 +534,7 @@ PrimeAnnual$PercentCanada<-PrimeAnnual$Obligation.2014/PrimeAnnual$TotalPrime.20
 # 
 # 
 
-ggplot(SubContractAnnual,
+ggplot(BlendedContractAnnual,
        aes(x=Fiscal.Year,
            y=PercentCanada,
            color=MaxofCanadaRelevant))+
@@ -534,9 +542,260 @@ ggplot(SubContractAnnual,
               axis.title.x= element_text(size=9),
               legend.title= element_text(size=8),
               legend.text= element_text(size=8))+
-  scale_y_continuous("Percent of Obligations to Canada Related Vendors",labels = scales::percent)+
+  scale_y_continuous("Percent of Obligations to Canada Related Vendors",
+                     labels = scales::percent)+
+  expand_limits(y=0)+
   scale_x_date("Subaward Report Year")+
   scale_color_discrete("Prime Contract Canada Relevant")
+
+
+```
+
+
+```{r AnnualSectorCanadaPercentage}
+
+SubContractAnnualSectorOnlySub<-ddply(subset(CanadaFSRS,Fiscal.Year<as.Date("2016-01-01")),
+      .(Fiscal.Year,MaxofCanadaRelevant,CanadaSector),
+      summarise,
+      Obligation.2014=sum(Obligation.2014))
+
+SubContractAnnualSectorOnlySub<-subset(SubContractAnnualSectorOnlySub,MaxofCanadaRelevant=="Only Subcontract Level")
+
+SubContractAnnualSectorAll<-ddply(subset(CanadaFSRS,Fiscal.Year<as.Date("2016-01-01")),
+      .(Fiscal.Year,CanadaSector),
+      summarise,
+      Obligation.2014=sum(Obligation.2014))
+
+
+TotalFSRSAnnualSector<-ddply(subset(TotalFSRS,Fiscal.Year<as.Date("2016-01-01")),
+      .(Fiscal.Year,CanadaSector),
+      summarise,
+      Total.2014=sum(TotalSub.2014))
+
+SubContractAnnualSectorOnlySub<-plyr::join(SubContractAnnualSectorOnlySub,TotalFSRSAnnualSector)
+SubContractAnnualSectorOnlySub$PercentCanada<-SubContractAnnualSectorOnlySub$Obligation.2014/SubContractAnnualSectorOnlySub$Total.2014
+
+SubContractAnnualSectorAll<-plyr::join(SubContractAnnualSectorAll,TotalFSRSAnnualSector)
+SubContractAnnualSectorAll$PercentCanada<-SubContractAnnualSectorAll$Obligation.2014/SubContractAnnualSectorAll$Total.2014
+SubContractAnnualSectorAll$MaxofCanadaRelevant<-"All Subcontracts"
+BlendedContractAnnualSector<-rbind(SubContractAnnualSectorOnlySub,SubContractAnnualSectorAll)
+
+
+PrimeAnnualSector<-ddply(CanadaFPDS,
+      .(Fiscal.Year,CanadaSector),
+      summarise,
+      Obligation.2014=sum(Obligation.2014))
+
+TotalFPDSAnnualSector<-ddply(TotalFPDS,
+      .(Fiscal.Year,CanadaSector),
+      summarise,
+      Total.2014=sum(TotalPrime.2014))
+
+PrimeAnnualSector<-plyr::join(PrimeAnnualSector,TotalFPDSAnnualSector)
+PrimeAnnualSector$PercentCanada<-PrimeAnnualSector$Obligation.2014/PrimeAnnualSector$Total.2014
+PrimeAnnualSector$MaxofCanadaRelevant<-"Prime Contracts"
+
+BlendedContractAnnualSector<-rbind(BlendedContractAnnualSector,PrimeAnnualSector)
+
+
+ggplot(BlendedContractAnnualSector,
+       aes(x=Fiscal.Year,
+           y=PercentCanada,
+           color=MaxofCanadaRelevant))+
+  geom_line(stat="identity")+ theme(legend.position="bottom",
+              axis.title.x= element_text(size=9),
+              legend.title= element_text(size=8),
+              legend.text= element_text(size=8))+
+  scale_y_continuous("Percent of Obligations to Canada Related Vendors",
+                     labels = scales::percent)+
+  expand_limits(y=0)+
+  scale_x_date("Subaward Report Year")+
+  scale_color_discrete("Prime Contract Canada Relevant")+
+  facet_wrap("CanadaSector")
+
+
+HighPercentContractAnnualSector<-subset(BlendedContractAnnualSector,
+                                    CanadaSector %in% c("Land",
+                                                         "Other Products",
+                                                         "Space")&!is.na(CanadaSector))
+
+
+ggplot(HighPercentContractAnnualSector,
+       aes(x=Fiscal.Year,
+           y=PercentCanada,
+           color=MaxofCanadaRelevant))+
+  geom_line(stat="identity")+ theme(legend.position="bottom",
+              axis.title.x= element_text(size=9),
+              legend.title= element_text(size=8),
+              legend.text= element_text(size=8))+
+  scale_y_continuous("Percent of Obligations to Canada Related Vendors",
+                     labels = scales::percent)+
+  expand_limits(y=0)+
+  scale_x_date("Subaward Report Year")+
+  scale_color_discrete("Prime Contract Canada Relevant")+
+  facet_wrap("CanadaSector")
+
+
+LowPercentContractAnnualSector<-subset(BlendedContractAnnualSector,
+                                    !CanadaSector %in% c("Land",
+                                                         "Other Products",
+                                                         "Space")&!is.na(CanadaSector))
+
+
+
+
+ggplot(LowPercentContractAnnualSector,
+       aes(x=Fiscal.Year,
+           y=PercentCanada,
+           color=MaxofCanadaRelevant))+
+  geom_line(stat="identity")+ theme(legend.position="bottom",
+              axis.title.x= element_text(size=9),
+              legend.title= element_text(size=8),
+              legend.text= element_text(size=8))+
+  scale_y_continuous("Percent of Obligations to Canada Related Vendors",
+                     labels = scales::percent)+
+  expand_limits(y=0)+
+  scale_x_date("Subaward Report Year")+
+  scale_color_discrete("Prime Contract Canada Relevant")+
+  facet_wrap("CanadaSector",ncol=4)
+
+
+
+```
+
+
+
+```{r AnnualCustomerPercentageCanada}
+
+SubContractAnnualCustomerOnlySub<-ddply(subset(CanadaFSRS,Fiscal.Year<as.Date("2016-01-01")),
+      .(Fiscal.Year,MaxofCanadaRelevant,Customer),
+      summarise,
+      Obligation.2014=sum(Obligation.2014))
+
+SubContractAnnualCustomerOnlySub<-subset(SubContractAnnualCustomerOnlySub,MaxofCanadaRelevant=="Only Subcontract Level")
+
+SubContractAnnualCustomerAll<-ddply(subset(CanadaFSRS,Fiscal.Year<as.Date("2016-01-01")),
+      .(Fiscal.Year,Customer),
+      summarise,
+      Obligation.2014=sum(Obligation.2014))
+
+
+TotalFSRSAnnualCustomer<-ddply(subset(TotalFSRS,Fiscal.Year<as.Date("2016-01-01")),
+      .(Fiscal.Year,Customer),
+      summarise,
+      Total.2014=sum(TotalSub.2014))
+
+SubContractAnnualCustomerOnlySub<-plyr::join(SubContractAnnualCustomerOnlySub,TotalFSRSAnnualCustomer)
+SubContractAnnualCustomerOnlySub$PercentCanada<-SubContractAnnualCustomerOnlySub$Obligation.2014/SubContractAnnualCustomerOnlySub$Total.2014
+
+SubContractAnnualCustomerAll<-plyr::join(SubContractAnnualCustomerAll,TotalFSRSAnnualCustomer)
+SubContractAnnualCustomerAll$PercentCanada<-SubContractAnnualCustomerAll$Obligation.2014/SubContractAnnualCustomerAll$Total.2014
+SubContractAnnualCustomerAll$MaxofCanadaRelevant<-"All Subcontracts"
+BlendedContractAnnualCustomer<-rbind(SubContractAnnualCustomerOnlySub,SubContractAnnualCustomerAll)
+
+
+PrimeAnnualCustomer<-ddply(CanadaFPDS,
+      .(Fiscal.Year,Customer),
+      summarise,
+      Obligation.2014=sum(Obligation.2014))
+
+TotalFPDSAnnualCustomer<-ddply(TotalFPDS,
+      .(Fiscal.Year,Customer),
+      summarise,
+      Total.2014=sum(TotalPrime.2014))
+
+PrimeAnnualCustomer<-plyr::join(PrimeAnnualCustomer,TotalFPDSAnnualCustomer)
+PrimeAnnualCustomer$PercentCanada<-PrimeAnnualCustomer$Obligation.2014/PrimeAnnualCustomer$Total.2014
+PrimeAnnualCustomer$MaxofCanadaRelevant<-"Prime Contracts"
+
+BlendedContractAnnualCustomer<-rbind(BlendedContractAnnualCustomer,PrimeAnnualCustomer)
+
+
+ggplot(BlendedContractAnnualCustomer,
+       aes(x=Fiscal.Year,
+           y=PercentCanada,
+           color=MaxofCanadaRelevant))+
+  geom_line(stat="identity")+ theme(legend.position="bottom",
+              axis.title.x= element_text(size=9),
+              legend.title= element_text(size=8),
+              legend.text= element_text(size=8))+
+  scale_y_continuous("Percent of Obligations to Canada Related Vendors",
+                     labels = scales::percent)+
+  scale_x_date("Subaward Report Year")+
+  expand_limits(y=0)+
+  scale_color_discrete("Prime Contract Canada Relevant")+
+  facet_wrap("Customer")
+
+
+
+```
+
+
+```{r AnnualDoDSubCustomerPercentageCanada}
+
+SubContractAnnualSubcustomerOnlySub<-ddply(subset(CanadaFSRS,
+                                                  Fiscal.Year<as.Date("2016-01-01") &
+                                                    Customer=="Defense"),
+      .(Fiscal.Year,MaxofCanadaRelevant,SubCustomer),
+      summarise,
+      Obligation.2014=sum(Obligation.2014))
+
+SubContractAnnualSubCustomerOnlySub<-subset(SubContractAnnualSubcustomerOnlySub,MaxofCanadaRelevant=="Only Subcontract Level")
+
+SubContractAnnualSubCustomerAll<-ddply(subset(CanadaFSRS,Fiscal.Year<as.Date("2016-01-01")&
+                                                    Customer=="Defense"),
+      .(Fiscal.Year,SubCustomer),
+      summarise,
+      Obligation.2014=sum(Obligation.2014))
+
+
+TotalFSRSAnnualSubCustomer<-ddply(subset(TotalFSRS,Fiscal.Year<as.Date("2016-01-01")&
+                                                    Customer=="Defense"),
+      .(Fiscal.Year,SubCustomer),
+      summarise,
+      Total.2014=sum(TotalSub.2014))
+
+SubContractAnnualSubCustomerOnlySub<-plyr::join(SubContractAnnualSubCustomerOnlySub,TotalFSRSAnnualSubCustomer)
+SubContractAnnualSubCustomerOnlySub$PercentCanada<-SubContractAnnualSubCustomerOnlySub$Obligation.2014/SubContractAnnualSubCustomerOnlySub$Total.2014
+
+SubContractAnnualSubCustomerAll<-plyr::join(SubContractAnnualSubCustomerAll,TotalFSRSAnnualSubCustomer)
+SubContractAnnualSubCustomerAll$PercentCanada<-SubContractAnnualSubCustomerAll$Obligation.2014/SubContractAnnualSubCustomerAll$Total.2014
+SubContractAnnualSubCustomerAll$MaxofCanadaRelevant<-"All Subcontracts"
+BlendedContractAnnualSubCustomer<-rbind(SubContractAnnualSubCustomerOnlySub,SubContractAnnualSubCustomerAll)
+
+
+PrimeAnnualSubCustomer<-ddply(subset(CanadaFPDS,Customer=="Defense"),
+      .(Fiscal.Year,SubCustomer),
+      summarise,
+      Obligation.2014=sum(Obligation.2014))
+
+TotalFPDSAnnualSubCustomer<-ddply(subset(TotalFPDS,Customer=="Defense"),
+      .(Fiscal.Year,SubCustomer),
+      summarise,
+      Total.2014=sum(TotalPrime.2014))
+
+PrimeAnnualSubCustomer<-plyr::join(PrimeAnnualSubCustomer,TotalFPDSAnnualSubCustomer)
+PrimeAnnualSubCustomer$PercentCanada<-PrimeAnnualSubCustomer$Obligation.2014/PrimeAnnualSubCustomer$Total.2014
+PrimeAnnualSubCustomer$MaxofCanadaRelevant<-"Prime Contracts"
+
+BlendedContractAnnualSubCustomer<-rbind(BlendedContractAnnualSubCustomer,PrimeAnnualSubCustomer)
+
+
+ggplot(BlendedContractAnnualSubCustomer,
+       aes(x=Fiscal.Year,
+           y=PercentCanada,
+           color=MaxofCanadaRelevant))+
+  geom_line(stat="identity")+ theme(legend.position="bottom",
+              axis.title.x= element_text(size=9),
+              legend.title= element_text(size=8),
+              legend.text= element_text(size=8))+
+  scale_y_continuous("Percent of Obligations to Canada Related Vendors",
+                     labels = scales::percent)+
+  expand_limits(y=0)+
+  scale_x_date("Subaward Report Year")+
+  scale_color_discrete("Prime Contract Canada Relevant")+
+  facet_wrap("SubCustomer")
+
 
 
 ```
