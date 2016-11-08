@@ -49,17 +49,35 @@
           <AssociatedConnUserName />
           <FullPath>Contract_SP_FSRSinContext.sql</FullPath>
         </FileNode>
-        <FileNode Name="Location_CanadaRelatedFPDS.sql">
+        <FileNode Name="ErrorLogging_PrimaryKeyList.sql">
           <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:VMDatabase:True</AssociatedConnectionMoniker>
           <AssociatedConnSrvName>VMDatabase</AssociatedConnSrvName>
           <AssociatedConnUserName />
-          <FullPath>Location_CanadaRelatedFPDS.sql</FullPath>
+          <FullPath>ErrorLogging_PrimaryKeyList.sql</FullPath>
         </FileNode>
-        <FileNode Name="Location_CanadaRelatedFSRS.sql">
+        <FileNode Name="Location_CanadaRelatedFPDScomplete.sql">
           <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:VMDatabase:True</AssociatedConnectionMoniker>
           <AssociatedConnSrvName>VMDatabase</AssociatedConnSrvName>
           <AssociatedConnUserName />
-          <FullPath>Location_CanadaRelatedFSRS.sql</FullPath>
+          <FullPath>Location_CanadaRelatedFPDScomplete.sql</FullPath>
+        </FileNode>
+        <FileNode Name="Location_CanadaRelatedFPDSpartial.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:VMDatabase:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>VMDatabase</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>Location_CanadaRelatedFPDSpartial.sql</FullPath>
+        </FileNode>
+        <FileNode Name="Location_CanadaRelatedFSRScomplete.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:VMDatabase:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>VMDatabase</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>Location_CanadaRelatedFSRScomplete.sql</FullPath>
+        </FileNode>
+        <FileNode Name="Location_CanadaRelatedFSRSpartial.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:VMDatabase:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>VMDatabase</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>Location_CanadaRelatedFSRSpartial.sql</FullPath>
         </FileNode>
         <FileNode Name="Location_CCCcontractExtraction.sql">
           <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:VMDatabase:True</AssociatedConnectionMoniker>
