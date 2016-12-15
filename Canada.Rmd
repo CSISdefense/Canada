@@ -389,4 +389,143 @@ PrimeContractCount<-ddply(CanadaFPDS2011,
       Obligation.2014=sum(Obligation.2014),
       ContractCount=length(CSIScontractID))
 
-write("PrimeContract.csv",PrimeContract
+write("PrimeContract.csv",PrimeContract)
+```
+
+
+```{r USITCimport}
+USITC<-read.csv(
+  paste("Data\\","USITCbilateralTrade.csv",sep=""),
+  header=TRUE, sep=",", na.strings="NA", dec=".", strip.white=TRUE, 
+  check.names=FALSE,
+  stringsAsFactors=TRUE
+)
+
+USITC<-melt(USITC,
+                 id.vars=c('SourceCountry','DestinationCountry','DefenseVCivilian','EndUseCode','EndUseDescription'),
+            value.name="TradeValue",
+            variable.name="CalendarYear"
+)
+
+USITC$TradeValue<-FactorToNumber(USITC$TradeValue)
+USITC$CalendarYear<-FactorToNumber(USITC$CalendarYear)
+USITC$Fiscal.Year<-USITC$CalendarYear #THIS IS A KLUDGE
+
+USITC<-read_and_join(Path,"LOOKUP_Deflators.csv",USITC)  
+USITC$TradeValue.2015<-USITC$TradeValue/USITC$Deflator.2015
+
+USITC.DvC<-ddply(USITC,.(CalendarYear,SourceCountry,DestinationCountry,DefenseVCivilian),
+                 plyr::summarise,
+      TradeValue.2015=sum(TradeValue.2015))
+
+USITC.DvC.1989<-subset(USITC.DvC,CalendarYear==1989, select=-c(CalendarYear))
+colnames(USITC.DvC.1989)[colnames(USITC.DvC.1989)=="TradeValue.2015"]<-"baseline.1989"
+
+USITC.DvC<-join(USITC.DvC,USITC.DvC.1989)
+USITC.DvC$growth.1989<-USITC.DvC$TradeValue.2015/USITC.DvC$baseline.1989
+
+USITC.DvC$Direction[USITC.DvC$SourceCountry=="Canada"]<-"U.S. Imports from Canada"
+USITC.DvC$Direction[USITC.DvC$SourceCountry=="United States"]<-"U.S. Exports to Canada"
+USITC.DvC$Direction[USITC.DvC$SourceCountry=="World"]<-"U.S. Imports from World"
+```
+
+```{r CanadaExpenditureImport}
+CanadaExp<-read.csv(
+  file.path("Data","Canada_Table380_0080.csv"),
+  header=FALSE,
+  sep=",",
+  na.strings="NA",
+  dec=".",
+  strip.white=TRUE, 
+  check.names=FALSE,
+  stringsAsFactors=TRUE,
+  skip=7
+)
+#Drop the last three lines from the file, which aren't data
+CanadaExp<-head(CanadaExp,-3)
+colnames(CanadaExp)<-c("Quarter","DefenseExpenditureSeasonallyAdjusted","DefenseExpenditure")
+
+CanadaExp$CalendarYear<-as.numeric(substr(CanadaExp$Quarter,4,7))
+
+CanadaExp.annual<-ddply(CanadaExp,
+                        .(CalendarYear),
+                        plyr::summarise,
+                        DefenseExpenditureSeasonallyAdjusted=sum(DefenseExpenditureSeasonallyAdjusted),
+                        DefenseExpenditure=sum(DefenseExpenditure),
+                        NQuarters=length(Quarter))
+CanadaExp.annual<-subset(CanadaExp.annual,NQuarters==4)
+
+CanadaGDPindex<-read.csv(
+  file.path("Data","Canada_Table380_0102_GDPindexes.csv"),
+  header=FALSE,
+  sep=",",
+  na.strings="NA",
+  dec=".",
+  strip.white=TRUE, 
+  check.names=FALSE,
+  stringsAsFactors=TRUE,
+  skip=6
+)
+CanadaGDPindex<-head(CanadaGDPindex,-3)
+colnames(CanadaGDPindex)<-c("CalendarYear","GDPimplicitDeflator")
+CanadaGDPindex$GDPimplicitDeflator<-as.numeric(as.character(CanadaGDPindex$GDPimplicitDeflator))
+
+CanadaGDPindex$GDPimplicitDeflator.2015<-CanadaGDPindex$GDPimplicitDeflator/
+    subset(CanadaGDPindex,CalendarYear==2015)$GDPimplicitDeflator
+
+CanadaGDPindex$CalendarYear<-as.numeric(as.character(CanadaGDPindex$CalendarYear))
+CanadaExp.annual<-join(CanadaExp.annual,CanadaGDPindex)
+
+CanadaExp.annual$DefenseExpenditure.2015<-CanadaExp.annual$DefenseExpenditure/CanadaExp.annual$GDPimplicitDeflator*100
+
+CanadaGDPindex$growth.1989<-CanadaExp.annual$DefenseExpenditure/
+    subset(CanadaExp.annual,CalendarYear==1989)$DefenseExpenditure
+
+
+
+
+```
+
+
+```{r JoiningUp}
+CExp<-subset(CanadaExp.annual,select=c(CalendarYear,DefenseExpenditure.2015))
+CExp$Category<-"Canada Expenditures"
+CExp$DefenseVCivilian<-"DefenseVCivilian"
+colnames(CExp)[colnames(CExp)=="DefenseExpenditure.2015"]<-"value.2015"
+
+Udvc<-subset(USITC.DvC,select=c(CalendarYear,
+                          DefenseVCivilian,
+                          Direction,
+                          TradeValue.2015,
+                          growth.1989))
+colnames(CExp)[colnames(CExp)=="TradeValue.2015"]<-"value.2015"
+
+
+```
+
+```{r TradeGraphs}
+ggplot(USITC.DvC,
+       aes(x=CalendarYear,y=Trade1989,color=Direction)
+       )+geom_line()+facet_grid(DefenseVCivilian ~ .)+ scale_y_continuous(labels = scales::percent)+
+    theme(legend.position="bottom")
+
+ggplot(USITC.DvC,
+       aes(x=CalendarYear,y=TradeValue.2015,color=Direction)
+       )+geom_line()+facet_grid(DefenseVCivilian ~ .,scales="free_y")+scale_y_log10(labels=comma)+
+    theme(legend.position="bottom")
+
+
+ggplot(USITC.DvC,
+       aes(x=CalendarYear,y=TradeValue.2015,color=Direction)
+       )+geom_line()+facet_grid(DefenseVCivilian ~ .,scales="free_y")+scale_y_continuous(labels=comma)+
+    theme(legend.position="bottom")
+
+
+ggplot(subset(USITC.DvC,DefenseVCivilian=="Defense"),
+       aes(x=CalendarYear,y=TradeValue.2015,color=Direction)
+       )+geom_line()+scale_y_continuous(labels=comma)+
+    theme(legend.position="bottom")
+
+
+
+```
