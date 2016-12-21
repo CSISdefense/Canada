@@ -422,6 +422,7 @@ USITC.DvC.1989<-subset(USITC.DvC,CalendarYear==1989, select=-c(CalendarYear))
 colnames(USITC.DvC.1989)[colnames(USITC.DvC.1989)=="TradeValue.2015"]<-"baseline.1989"
 
 USITC.DvC<-join(USITC.DvC,USITC.DvC.1989)
+rm(USITC.DvC.1989)
 USITC.DvC$growth.1989<-USITC.DvC$TradeValue.2015/USITC.DvC$baseline.1989
 
 USITC.DvC$Direction[USITC.DvC$SourceCountry=="Canada"]<-"U.S. Imports from Canada"
@@ -475,22 +476,23 @@ CanadaGDPindex$GDPimplicitDeflator.2015<-CanadaGDPindex$GDPimplicitDeflator/
 
 CanadaGDPindex$CalendarYear<-as.numeric(as.character(CanadaGDPindex$CalendarYear))
 CanadaExp.annual<-join(CanadaExp.annual,CanadaGDPindex)
-
+rm(CanadaGDPindex)
 CanadaExp.annual$DefenseExpenditure.2015<-CanadaExp.annual$DefenseExpenditure/CanadaExp.annual$GDPimplicitDeflator*100
 
-CanadaGDPindex$growth.1989<-CanadaExp.annual$DefenseExpenditure/
+CanadaExp.annual$growth.1989<-CanadaExp.annual$DefenseExpenditure/
     subset(CanadaExp.annual,CalendarYear==1989)$DefenseExpenditure
 
-
-
+rm(CanadaExp.annual.1989)
 
 ```
 
 
 ```{r JoiningUp}
-CExp<-subset(CanadaExp.annual,select=c(CalendarYear,DefenseExpenditure.2015))
+CExp<-subset(CanadaExp.annual,select=c(CalendarYear,
+                                       DefenseExpenditure.2015,
+                                       growth.1989))
 CExp$Category<-"Canada Expenditures"
-CExp$DefenseVCivilian<-"DefenseVCivilian"
+CExp$DefenseVCivilian<-"Defense"
 colnames(CExp)[colnames(CExp)=="DefenseExpenditure.2015"]<-"value.2015"
 
 Udvc<-subset(USITC.DvC,select=c(CalendarYear,
@@ -498,8 +500,11 @@ Udvc<-subset(USITC.DvC,select=c(CalendarYear,
                           Direction,
                           TradeValue.2015,
                           growth.1989))
-colnames(CExp)[colnames(CExp)=="TradeValue.2015"]<-"value.2015"
+colnames(Udvc)[colnames(Udvc)=="TradeValue.2015"]<-"value.2015"
+colnames(Udvc)[colnames(Udvc)=="Direction"]<-"Category"
 
+Joint<-rbind(CExp,Udvc)
+rm(CExp,Udvc)
 
 ```
 
@@ -523,6 +528,33 @@ ggplot(USITC.DvC,
 
 ggplot(subset(USITC.DvC,DefenseVCivilian=="Defense"),
        aes(x=CalendarYear,y=TradeValue.2015,color=Direction)
+       )+geom_line()+scale_y_continuous(labels=comma)+
+    theme(legend.position="bottom")
+
+
+
+```
+
+```{r JointGraphs}
+ggplot(Joint,
+       aes(x=CalendarYear,y=growth.1989,color=Category)
+       )+geom_line()+facet_grid(DefenseVCivilian ~ .)+ scale_y_continuous(labels = scales::percent)+
+    theme(legend.position="bottom")
+
+ggplot(Joint,
+       aes(x=CalendarYear,y=value.2015,color=Category)
+       )+geom_line()+facet_grid(DefenseVCivilian ~ .,scales="free_y")+scale_y_log10(labels=comma)+
+    theme(legend.position="bottom")
+
+
+ggplot(Joint,
+       aes(x=CalendarYear,y=value.2015,color=Category)
+       )+geom_line()+facet_grid(DefenseVCivilian ~ .,scales="free_y")+scale_y_continuous(labels=comma)+
+    theme(legend.position="bottom")
+
+
+ggplot(subset(Joint,DefenseVCivilian=="Defense"),
+       aes(x=CalendarYear,y=value.2015,color=Category)
        )+geom_line()+scale_y_continuous(labels=comma)+
     theme(legend.position="bottom")
 
