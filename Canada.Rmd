@@ -383,7 +383,7 @@ PrimeContract2011<-ddply(subset(CanadaFPDS,Fiscal.Year>=2011),
       summarise,
       Obligation.2014=sum(Obligation.2014))
 
-PrimeContractCount<-ddply(CanadaFPDS2011,
+PrimeContractCount<-ddply(PrimeContract2011,
       .(IsSubcontractReportingContract),
       summarise,
       Obligation.2014=sum(Obligation.2014),
