@@ -1,7 +1,7 @@
 USE [DIIG]
 GO
 
-/****** Object:  View [Location].[CCCVendorIdentification]    Script Date: 9/22/2016 8:57:23 AM ******/
+/****** Object:  View [Location].[CanadaRelatedFPDSpartial]    Script Date: 3/25/2017 7:54:28 PM ******/
 SET ANSI_NULLS ON
 GO
 
@@ -10,13 +10,16 @@ GO
 
 
 
-ALTER VIEW [Location].CanadaRelatedFPDS
+
+
+ALTER VIEW [Location].[CanadaRelatedFPDSpartial]
 AS
 SELECT 
 C.fiscal_year
 ,ctid.CSIScontractID
 ,ccid.IDVpiid
 ,ccid.PIID
+,c.descriptionofcontractrequirement
 ,getdate() AS Query_Run_Date
 ,A.Customer
 ,A.SubCustomer 
@@ -53,12 +56,18 @@ END as CanadaSector
 		,iif(VendorISO.[alpha-3] = 'CAN' or
 			DunsISO.[alpha-3] ='CAN' or
 			ParentISO.[alpha-3] ='CAN' or
+			CCC.Is_CCC_Vendor=1,1,0) as IsVendorCanadianClassic
+		,iif(VendorISO.[alpha-3] = 'CAN' or
+			DunsISO.[alpha-3] ='CAN' or
+			ParentISO.[alpha-3] ='CAN' or
+			ParentHQISO.[alpha-3]='CAN' or
 			CCC.Is_CCC_Vendor=1,1,0) as IsVendorCanadian
+,iif(ParentHQISO.[alpha-3]='CAN',1,0) as IsParentHQCanadian
 ,pom.placeofmanufactureText
 ,CCC.Is_CCC_Vendor as IsCCCvendor
 ,C.dunsnumber
 ,C.parentdunsnumber
-,C.streetaddress
+	,C.streetaddress
 ,DUNS.StandardizedTopContractor
 ,isnull(ccid2supplier.Supplier,idv2supplier.Supplier) as Supplier
 ,isnull(ccid2supplier.Supplier_id,idv2supplier.Supplier_id) as Supplier_id
@@ -66,7 +75,8 @@ END as CanadaSector
 	WHEN PARENT.ParentID is not null and PARENT.ParentID<>'CANADIAN COMMERCIAL CORPORATION'
 	THEN PARENT.ParentID
 	WHEN PARENT.ParentID='CANADIAN COMMERCIAL CORPORATION'
-	THEN coalesce(ccid2supplier.Supplier,idv2supplier.Supplier,'Unmatched CCC')
+	THEN coalesce(ccid2supplier.ParentID,ccid2supplier.Supplier,
+	idv2supplier.ParentID,idv2supplier.Supplier,'Unmatched CCC')
 	ELSE DUNS.StandardizedTopContractor
 END as ParentIDsupplier
 ,PARENT.ParentID
@@ -126,6 +136,8 @@ FROM Contract.FPDS as C
 		ON DUNS.ParentID = PARENT.ParentID
 	left outer join location.CountryCodes as ParentISO
 		on Parent.topISO3countrycode =ParentISO.[alpha-3]
+			left outer join location.CountryCodes as ParentHQISO
+		on Parent.parentheadquarterscountrycode =ParentHQISO.[alpha-3]
 
 
 	
@@ -156,6 +168,8 @@ FROM Contract.FPDS as C
 	--	ParentISO.[alpha-3]  ='CAN' OR
 	--	CCC.Is_CCC_Vendor =1
 	--	)
+
+
 
 
 

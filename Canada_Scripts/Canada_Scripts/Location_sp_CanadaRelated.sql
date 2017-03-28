@@ -29,7 +29,7 @@ BEGIN
 	-- interfering with SELECT statements.
 	SET NOCOUNT ON;
 
-	SELECT TOP 1000 [fiscal_year]
+	SELECT  [fiscal_year]
       ,[Query_Run_Date]
       ,[Customer]
       ,[SubCustomer]
@@ -70,6 +70,63 @@ BEGIN
   FROM [DIIG].[Location].[CCCVendorIdentification]
 
 
+
+  SELECT [fiscal_year]
+      ,[Customer]
+	  ,SubCustomer
+	   ,CanadaSector
+	   ,Simple
+	   ,ProductOrServiceCodeText
+      ,sum([obligatedAmount]) as [obligatedAmount]
+  FROM [DIIG].[Location].[CanadaRelatedFPDScomplete]
+  group by  [fiscal_year]
+      ,[Customer]
+	  ,SubCustomer
+	   ,CanadaSector
+	   ,Simple
+	   ,ProductOrServiceCodeText
+  order by fiscal_year
+  ,Customer
+  ,subcustomer
+  ,CanadaSector
+
+  /****** Script for SelectTopNRows command from SSMS  ******/
+SELECT  [fiscal_year]
+      ,[Customer]
+      ,[Simple]
+      ,[CanadaSector]
+	  ,ProductServiceOrRnDarea
+	  ,ProductOrServiceCodeText
+	  ,ParentIDsupplier
+	  ,Supplier
+	  ,[IsPlaceCanada]
+      ,[IsOriginCanada]
+      ,[IsVendorCanadian]
+      ,[IsParentHQCanadian]
+	  ,iif([IsPlaceCanada]=1 or [IsOriginCanada]=1 or [IsVendorCanadianClassic]=1,1,0) as OriginallyQualified
+      ,sum([obligatedAmount]) as [obligatedAmount]
+      ,sum([numberOfActions]) as [numberOfActions]
+  FROM [DIIG].[Location].[CanadaRelatedFPDScomplete] f
+
+  group by  [fiscal_year]
+      ,[Customer]
+      ,[Simple]
+      ,[CanadaSector]
+	  ,ProductServiceOrRnDarea
+	  ,ProductOrServiceCodeText
+	  ,ParentIDsupplier
+	  ,Supplier
+	  ,[IsPlaceCanada]
+      ,[IsOriginCanada]
+      ,[IsVendorCanadian]
+      ,[IsParentHQCanadian]
+	  ,iif([IsPlaceCanada]=1 or [IsOriginCanada]=1 or [IsVendorCanadianClassic]=1,1,0) 
+
+
+
+
+
+  --Detailed Supplier breakdown
   SELECT [fiscal_year]
       ,[Customer]
 	   ,CASE
@@ -79,9 +136,18 @@ BEGIN
 		ELSE 'Other Products, Services and R&D'
 		END AS CanadaSectorSimple
       ,[ParentIDsupplier]
+	  ,Supplier
+	  ,Simple
+	  ,ProductServiceOrRnDarea
+	  ,IsPlaceCanada	
+	  ,IsOriginCanada	
+	  ,IsVendorCanadian	
+	  ,IsParentHQCanadian
+	  ,iif([IsPlaceCanada]=1 or [IsOriginCanada]=1 or [IsVendorCanadian]=1,1,0) as OriginallyQualified
+
       ,sum([obligatedAmount]) as [obligatedAmount]
       ,sum([numberOfActions]) as [numberOfActions]
-  FROM [DIIG].[Location].[CanadaRelatedFPDS]
+  FROM [DIIG].[Location].[CanadaRelatedFPDScomplete]
   where Customer='Defense'
   group by  [fiscal_year]
       ,[Customer]
@@ -91,11 +157,64 @@ BEGIN
 		THEN [CanadaSector] 
 		ELSE 'Other Products, Services and R&D'
 		END
+		,Supplier
+		,Simple
+	  ,ProductServiceOrRnDarea
       ,[ParentIDsupplier]
+	     ,[supplier]
+	  ,IsPlaceCanada	
+	  ,IsOriginCanada	
+	  ,IsVendorCanadian	
+	  ,IsParentHQCanadian
+	  ,iif([IsPlaceCanada]=1 or [IsOriginCanada]=1 or [IsVendorCanadian]=1,1,0)
   order by CanadaSectorSimple
   ,fiscal_year
   ,obligatedAmount desc
-END
+
+
+
+
+  SELECT [fiscal_year]
+      ,[Customer]
+	   ,CASE
+		WHEN [CanadaSector] in ('Air','C4ISR','Land',
+			'Sea','Space','Weapons, Ammunition and Missiles')
+		THEN [CanadaSector] 
+		ELSE 'Other Products, Services and R&D'
+		END AS CanadaSectorSimple
+      ,[ParentIDsupplier]
+	  --,Supplier
+	  --,ProductServiceOrRnDarea
+	  --,IsPlaceCanada	
+	  --,IsOriginCanada	
+	  --,IsVendorCanadian	
+	  ,IsParentHQCanadian
+	  ,iif([IsPlaceCanada]=1 or [IsOriginCanada]=1 or [IsVendorCanadian]=1,1,0) as OriginallyQualified
+
+      ,sum([obligatedAmount]) as [obligatedAmount]
+      ,sum([numberOfActions]) as [numberOfActions]
+  FROM [DIIG].[Location].[CanadaRelatedFPDScomplete]
+  where Customer='Defense'
+  group by  [fiscal_year]
+      ,[Customer]
+      ,CASE
+		WHEN [CanadaSector] in ('Air','C4ISR','Land',
+			'Sea','Space','Weapons, Ammunition and Missiles')
+		THEN [CanadaSector] 
+		ELSE 'Other Products, Services and R&D'
+		END
+		,Supplier
+	  ,ProductServiceOrRnDarea
+      ,[ParentIDsupplier]
+	  --   ,[supplier]
+	  --,IsPlaceCanada	
+	  --,IsOriginCanada	
+	  --,IsVendorCanadian	
+	  --,IsParentHQCanadian
+	  ,iif([IsPlaceCanada]=1 or [IsOriginCanada]=1 or [IsVendorCanadian]=1,1,0)
+  order by CanadaSectorSimple
+  ,fiscal_year
+  ,obligatedAmount desc
 
 
 /****** Script for SelectTopNRows command from SSMS  ******/
